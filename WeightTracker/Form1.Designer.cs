@@ -34,10 +34,10 @@
             this.monthCalendar1 = new System.Windows.Forms.MonthCalendar();
             this.exerciseLabel = new System.Windows.Forms.Label();
             this.repWeightGrid = new System.Windows.Forms.DataGridView();
-            this.RepsCol = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.WeightCol = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.addSetButton = new System.Windows.Forms.Button();
             this.addExerciseButton = new System.Windows.Forms.Button();
+            this.RepsCol = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.WeightCol = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.repWeightGrid)).BeginInit();
             this.SuspendLayout();
             // 
@@ -111,18 +111,6 @@
             this.repWeightGrid.TabIndex = 10;
             this.repWeightGrid.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.repWeightGrid_CellContentClick);
             // 
-            // RepsCol
-            // 
-            this.RepsCol.HeaderText = "Reps";
-            this.RepsCol.Name = "RepsCol";
-            this.RepsCol.ReadOnly = true;
-            // 
-            // WeightCol
-            // 
-            this.WeightCol.HeaderText = "Weight";
-            this.WeightCol.Name = "WeightCol";
-            this.WeightCol.ReadOnly = true;
-            // 
             // addSetButton
             // 
             this.addSetButton.Location = new System.Drawing.Point(196, 58);
@@ -142,6 +130,16 @@
             this.addExerciseButton.Text = "add exercise";
             this.addExerciseButton.UseVisualStyleBackColor = true;
             this.addExerciseButton.Click += new System.EventHandler(this.addExerciseButton_Click);
+            // 
+            // RepsCol
+            // 
+            this.RepsCol.HeaderText = "Reps";
+            this.RepsCol.Name = "RepsCol";
+            // 
+            // WeightCol
+            // 
+            this.WeightCol.HeaderText = "Weight";
+            this.WeightCol.Name = "WeightCol";
             // 
             // Form1
             // 
@@ -172,10 +170,10 @@
         private System.Windows.Forms.MonthCalendar monthCalendar1;
         private System.Windows.Forms.Label exerciseLabel;
         private System.Windows.Forms.DataGridView repWeightGrid;
-        private System.Windows.Forms.DataGridViewTextBoxColumn RepsCol;
-        private System.Windows.Forms.DataGridViewTextBoxColumn WeightCol;
         private System.Windows.Forms.Button addSetButton;
         private System.Windows.Forms.Button addExerciseButton;
+        private System.Windows.Forms.DataGridViewTextBoxColumn RepsCol;
+        private System.Windows.Forms.DataGridViewTextBoxColumn WeightCol;
     }
 }
 

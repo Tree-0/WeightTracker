@@ -18,6 +18,9 @@ namespace WeightTracker
         public Form1()
         {
             InitializeComponent();
+
+            repWeightGrid.ReadOnly = false;
+       
             repWeightGrid.CellValidating += repWeightGrid_CellValidating;
         }
 
@@ -77,6 +80,9 @@ namespace WeightTracker
             DataGridView dataGridView = (DataGridView)sender;
             string inputValue = e.FormattedValue.ToString();
 
+            if (String.IsNullOrEmpty(inputValue))
+                return;
+
             // Use a suitable validation method, such as TryParse, to check if the input is a number
             if (!int.TryParse(inputValue, out _))
             {
@@ -86,6 +92,7 @@ namespace WeightTracker
                 // Cancel the editing process to keep the focus on the current cell
                 e.Cancel = true;
             }
+            
         }
     }
 
