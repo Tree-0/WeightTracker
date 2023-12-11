@@ -10,29 +10,37 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
+using System.Diagnostics;
 
 namespace WeightTracker
 {
     public partial class Form1 : Form
     {
+        // Exercises are added to this list upon clicking the "add exercise" button
+        // This list is used to instantiate a Workout object when the "submit" button is pressed
+        // After each workout is submitted, this list is cleared and reused
+        List<Exercise> exercises = new List<Exercise>();
+
         public Form1()
         {
             InitializeComponent();
 
             repWeightGrid.ReadOnly = false;
-       
+            // add method to list of methods that occur during CellValidating event
             repWeightGrid.CellValidating += repWeightGrid_CellValidating;
         }
 
-        private void avgWeightLabel_Click(object sender, EventArgs e)
+        /*private void avgWeightLabel_Click(object sender, EventArgs e)
         {
 
         }
+        */
 
         private void repWeightGrid_CellContentClick(object sender, EventArgs e)
         {
 
         }
+        
 
         private void addSetButton_Click(object sender, EventArgs e)
         {
@@ -42,12 +50,25 @@ namespace WeightTracker
         private void submitButton_Click(object sender, EventArgs e)
         {
             //Store Exercise Object with all data in winform to file of data
-            Workout w = new Workout();
+            DateTime selectedDate = monthCalendar1.SelectionStart;
+            Workout w = new Workout(exercises, selectedDate);
+            // MessageBox.Show(w.toString()); // Debug : display toString of the workout
             
+            // Serialize Workout object and append to a text file
+            string JsonString = JsonConvert.SerializeObject(w);
+            String fileName = "workoutData.json";
+            string fullPath = Path.GetFullPath(fileName);
 
-            string content = JsonConvert.SerializeObject(w);
-            String filePath = "workoutData.json";
-            File.AppendAllText(filePath, content);
+            File.AppendAllText(fullPath, JsonString);
+
+            MessageBox.Show("Workout Submitted");
+
+            // reset the list of exercises to be reused for the next workout
+            exercises.Clear();
+
+            
+            //MessageBox.Show(JsonString);
+            Process.Start(fileName);
         }
 
         // When clicked, add all field values into a new exercise object
@@ -55,19 +76,20 @@ namespace WeightTracker
         {
             //creating values for Exercise 
             String name = exerciseBox.Text;
-            int sets = repWeightGrid.RowCount;
+            int sets = repWeightGrid.RowCount - 1;
 
             // From the table in the window, generate lists of reps and weights
             int[] repList = new int[sets];
             int[] weightList = new int[sets];
             for (int i = 0; i < sets; i++)
             {
-                repList[i] = (int)repWeightGrid.Rows[i].Cells[0].Value;
-                weightList[i] = (int)repWeightGrid.Rows[i].Cells[1].Value;
+                repList[i] = int.Parse(repWeightGrid.Rows[i].Cells[0].Value.ToString());
+                weightList[i] = int.Parse(repWeightGrid.Rows[i].Cells[1].Value.ToString());
             }
 
             Exercise ex = new Exercise(name, sets, repList, weightList);
-            // add to some workout object 
+            // Add to global var 
+            exercises.Add(ex);
 
             // display to user that it worked
             MessageBox.Show("Exercise added");
@@ -94,114 +116,26 @@ namespace WeightTracker
             }
             
         }
-    }
 
-    // Workout Class
-    public class Workout
-    {
-        
-        private List<Exercise> exercises;   // The list of exercises from the workout
-        private DateTime dateOfWorkout;     // the date the workout was completed
-
-        // return list of exercises
-        public List<Exercise> getExercises()
+        private void button1_Click(object sender, EventArgs e)
         {
-            return this.exercises;
-        }
-
-        // set the entire list of exercises in Workout 
-        public void setExercises(List<Exercise> ex)
-        {
-            this.exercises = ex;
-        }
-
-        // add an exercise to the end of the list
-        // in the future, add a way to sort lists by date
-        public void addExercise(Exercise e)
-        {
-            exercises.Add(e);
-        }
-
-        // removes an exercise from the workout list if it matches the input argument
-        // ideally never removes more than one at a time because of dateOfWorkout
-        public void removeExercise(Exercise e)
-        {
-            foreach (Exercise ex in exercises)
+            Person person = new Person
             {
-                if(ex.Equals(e))
-                {
-                    exercises.Remove(ex);
-                }
-            }
+                FirstName = "John",
+                LastName = "Doe",
+                Age = 30
+            };
+
+            // Serialize the object to a JSON string
+            string jsonString = JsonConvert.SerializeObject(person);
         }
 
-        // get/set date
-        public DateTime getDateOfWorkout()
+        class Person
         {
-            return this.dateOfWorkout;
-        }
-
-        public void setDateOfWorkout(DateTime d)
-        {
-            this.dateOfWorkout = d;
+            public string FirstName { get; set; }
+            public string LastName { get; set; }
+            public int Age { get; set; }
         }
     }
-
-    // Exercise Class 
-    public class Exercise
-    {
-        private String name;   // name of exercise
-        private int sets;      // number of sets done
-        private int[] reps;    // a list of numbers, one entry per set
-        private int[] weights; // a list of numbers, one entry per set
-
-        public Exercise(string n, int s, int[] r, int[] w)
-        {
-            name = n;
-            sets = s;
-            reps = r;
-            weights = w;
-
-        }
-        // getters and setters
-        public String getName()
-        {
-            return this.name;
-        }
-
-        public void setName(String n)
-        {
-            this.name = n;
-        }
-
-        public int getSets()
-        {
-            return this.sets;
-        }
-
-        public void setSets(int s)
-        {
-            this.sets = s;
-        }
-
-        public int[] getReps()
-        {
-            return this.reps;
-        }
-
-        public void setReps(int[] r)
-        {
-            this.reps = r;
-        }
-
-        public int[] getWeights()
-        {
-            return this.weights;
-        }
-
-        public void setWeights(int[] w)
-        {
-            this.weights = w;
-        }
-    }
+    
 }

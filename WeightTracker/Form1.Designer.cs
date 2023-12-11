@@ -34,10 +34,11 @@
             this.monthCalendar1 = new System.Windows.Forms.MonthCalendar();
             this.exerciseLabel = new System.Windows.Forms.Label();
             this.repWeightGrid = new System.Windows.Forms.DataGridView();
-            this.addSetButton = new System.Windows.Forms.Button();
-            this.addExerciseButton = new System.Windows.Forms.Button();
             this.RepsCol = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.WeightCol = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.addSetButton = new System.Windows.Forms.Button();
+            this.addExerciseButton = new System.Windows.Forms.Button();
+            this.button1 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.repWeightGrid)).BeginInit();
             this.SuspendLayout();
             // 
@@ -111,6 +112,16 @@
             this.repWeightGrid.TabIndex = 10;
             this.repWeightGrid.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.repWeightGrid_CellContentClick);
             // 
+            // RepsCol
+            // 
+            this.RepsCol.HeaderText = "Reps";
+            this.RepsCol.Name = "RepsCol";
+            // 
+            // WeightCol
+            // 
+            this.WeightCol.HeaderText = "Weight";
+            this.WeightCol.Name = "WeightCol";
+            // 
             // addSetButton
             // 
             this.addSetButton.Location = new System.Drawing.Point(196, 58);
@@ -131,21 +142,22 @@
             this.addExerciseButton.UseVisualStyleBackColor = true;
             this.addExerciseButton.Click += new System.EventHandler(this.addExerciseButton_Click);
             // 
-            // RepsCol
+            // button1
             // 
-            this.RepsCol.HeaderText = "Reps";
-            this.RepsCol.Name = "RepsCol";
-            // 
-            // WeightCol
-            // 
-            this.WeightCol.HeaderText = "Weight";
-            this.WeightCol.Name = "WeightCol";
+            this.button1.Location = new System.Drawing.Point(523, 346);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(75, 23);
+            this.button1.TabIndex = 13;
+            this.button1.Text = "button1";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(717, 486);
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.addExerciseButton);
             this.Controls.Add(this.addSetButton);
             this.Controls.Add(this.repWeightGrid);
@@ -174,6 +186,7 @@
         private System.Windows.Forms.Button addExerciseButton;
         private System.Windows.Forms.DataGridViewTextBoxColumn RepsCol;
         private System.Windows.Forms.DataGridViewTextBoxColumn WeightCol;
+        private System.Windows.Forms.Button button1;
     }
 }
 
