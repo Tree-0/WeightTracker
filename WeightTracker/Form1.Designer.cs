@@ -38,7 +38,6 @@
             this.WeightCol = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.addSetButton = new System.Windows.Forms.Button();
             this.addExerciseButton = new System.Windows.Forms.Button();
-            this.button1 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.repWeightGrid)).BeginInit();
             this.SuspendLayout();
             // 
@@ -60,6 +59,7 @@
             this.graphButton.TabIndex = 1;
             this.graphButton.Text = "Graph";
             this.graphButton.UseVisualStyleBackColor = true;
+            this.graphButton.Click += new System.EventHandler(this.graphButton_Click);
             // 
             // exerciseBox
             // 
@@ -142,22 +142,11 @@
             this.addExerciseButton.UseVisualStyleBackColor = true;
             this.addExerciseButton.Click += new System.EventHandler(this.addExerciseButton_Click);
             // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(523, 346);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 13;
-            this.button1.Text = "button1";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(717, 486);
-            this.Controls.Add(this.button1);
             this.Controls.Add(this.addExerciseButton);
             this.Controls.Add(this.addSetButton);
             this.Controls.Add(this.repWeightGrid);
@@ -167,6 +156,7 @@
             this.Controls.Add(this.graphButton);
             this.Controls.Add(this.submitButton);
             this.Name = "Form1";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Form1";
             ((System.ComponentModel.ISupportInitialize)(this.repWeightGrid)).EndInit();
             this.ResumeLayout(false);
@@ -186,7 +176,6 @@
         private System.Windows.Forms.Button addExerciseButton;
         private System.Windows.Forms.DataGridViewTextBoxColumn RepsCol;
         private System.Windows.Forms.DataGridViewTextBoxColumn WeightCol;
-        private System.Windows.Forms.Button button1;
     }
 }
 

@@ -49,24 +49,45 @@ namespace WeightTracker
 
         private void submitButton_Click(object sender, EventArgs e)
         {
-            //Store Exercise Object with all data in winform to file of data
-            DateTime selectedDate = monthCalendar1.SelectionStart;
+            //Store the created list of exercises, along with the date, in a new workout object
+            DateTime selectedDate = monthCalendar1.SelectionStart.Date;
             Workout w = new Workout(exercises, selectedDate);
-            // MessageBox.Show(w.toString()); // Debug : display toString of the workout
-            
-            // Serialize Workout object and append to a text file
-            string JsonString = JsonConvert.SerializeObject(w);
-            String fileName = "workoutData.json";
+
+            //get path of file 
+            string fileName = "workoutData.json";
             string fullPath = Path.GetFullPath(fileName);
 
-            File.AppendAllText(fullPath, JsonString);
+            //de-serialize contents of file into a WorkoutContainer object
+            string fileText = File.ReadAllText(fullPath);
+
+            // check if there is anything in file - if there is, put it in WorkoutContainer object 
+            // if nothing in file, create new WC object
+            WorkoutContainer WC = new WorkoutContainer();
+            try
+            {
+                //Try to create a container from data in file
+                if (!string.IsNullOrEmpty(fileText))
+                {
+                    WC = JsonConvert.DeserializeObject<WorkoutContainer>(fileText);
+                }
+            } 
+            catch (JsonReaderException err) 
+            {
+                //show user error message and create an empty WorkoutContainer
+                MessageBox.Show($"error reading data from file: {err.Message}");
+                return;
+            }
+
+            WC.Add(w); //Add the newest workout to the container
+            
+            // Re-Serialize WorkoutContainer object and put back into file
+            string JsonString = JsonConvert.SerializeObject(WC, Formatting.Indented);           
+            File.WriteAllText(fullPath, JsonString);
 
             MessageBox.Show("Workout Submitted");
 
             // reset the list of exercises to be reused for the next workout
             exercises.Clear();
-
-            
             //MessageBox.Show(JsonString);
             Process.Start(fileName);
         }
@@ -76,7 +97,7 @@ namespace WeightTracker
         {
             //creating values for Exercise 
             String name = exerciseBox.Text;
-            int sets = repWeightGrid.RowCount - 1;
+            int sets = repWeightGrid.RowCount - 1; // -1 because there is always an empty last row
 
             // From the table in the window, generate lists of reps and weights
             int[] repList = new int[sets];
@@ -94,6 +115,11 @@ namespace WeightTracker
             // display to user that it worked
             MessageBox.Show("Exercise added");
 
+        }
+
+        private void graphButton_Click(object sender, EventArgs e)
+        {
+            // Load a chart of one or more selected exercises plotted x: date / y: weights
         }
 
         // ensure only numbers are entered into the data grid
@@ -115,26 +141,6 @@ namespace WeightTracker
                 e.Cancel = true;
             }
             
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            Person person = new Person
-            {
-                FirstName = "John",
-                LastName = "Doe",
-                Age = 30
-            };
-
-            // Serialize the object to a JSON string
-            string jsonString = JsonConvert.SerializeObject(person);
-        }
-
-        class Person
-        {
-            public string FirstName { get; set; }
-            public string LastName { get; set; }
-            public int Age { get; set; }
         }
     }
     

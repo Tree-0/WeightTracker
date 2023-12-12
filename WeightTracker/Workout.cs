@@ -10,12 +10,11 @@ namespace WeightTracker
     {
 
         public List<Exercise> exercises { get; set; }   // The list of exercises from the workout
-        private DateTime dateOfWorkout;     // the date the workout was completed
+        public DateTime dateOfWorkout;     // the date the workout was completed
 
-        //Default Cons
+        //Constructors
         public Workout() { }
 
-        //Constructor 
         public Workout(List<Exercise> loe, DateTime d)
         {
             exercises = loe;
@@ -44,6 +43,7 @@ namespace WeightTracker
 
         // get/set date
         // possibly delete??
+        /*
         public DateTime getDateOfWorkout()
         {
             return this.dateOfWorkout;
@@ -53,6 +53,7 @@ namespace WeightTracker
         {
             this.dateOfWorkout = d;
         }
+        */
 
         // return a string of all workout names, and the date
         // perhaps add reps and weights in the future
@@ -65,16 +66,31 @@ namespace WeightTracker
                 sb.Append(ex.Name + " reps: " + ex.reps + " weights: " + ex.weights + "\n");
 
             }
-            sb.Append(this.getDateOfWorkout().ToString());
+            sb.Append(this.dateOfWorkout.ToString());
 
             return sb.ToString();
         }
 
         public Boolean Equals(Workout w)
         {
+            // if different amounts of exercises they are not the same workout
+            if (this.exercises.Count != w.exercises.Count) 
+                return false;
+
             // Check if every workout in each exercise list is identical using the Exercise.equals method
-            
+            for (int i = 0; i < exercises.Count; i++)
+            {
+                if (!this.exercises[i].Equals(w.exercises[i]))
+                {
+                    return false;
+                }
+            }
+
             // Check if the DateTime of each workout is the same
+            if (this.dateOfWorkout != w.dateOfWorkout)
+            {
+                return false;
+            }
 
             return true;
         }
