@@ -33,5 +33,29 @@ namespace WeightTracker
             // Exercise objects are not equal
             return false;
         }
+
+        // gets the total number of reps across all sets of the exercise
+        public int TotalReps()
+        {
+            return this.reps.Sum();
+        }
+
+        // gets the total weight lifted across all reps of the exercise
+        public int TotalWeightLifted()
+        {
+            int sumWeights = 0;
+            for (int i = 0; i < this.reps.Length; i++)
+            {
+                // for each set, add the number of reps times the weight lifted for that set to the sum
+                sumWeights += this.reps[i] * this.weights[i];
+            }
+            return sumWeights;
+        }
+
+        // gets the average weight lifted for each rep
+        public int AverageWeightLifted()
+        {
+            return this.TotalWeightLifted() / this.TotalReps();
+        }
     }
 }

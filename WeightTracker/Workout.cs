@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace WeightTracker
 {
@@ -93,6 +94,20 @@ namespace WeightTracker
             }
 
             return true;
+        }
+
+        // checks all the exercises in a workout and adds the average rep weight 
+        // of any exercises with matching name to a series
+        public void addExercisesToSeries(Series s, string n)
+        {
+            foreach (Exercise e in this.exercises)
+            {
+                if (e.Name.Equals(n))
+                {
+                    // Add a point to the series with the date and avg rep weight of exercise
+                    s.Points.AddXY(this.dateOfWorkout, e.AverageWeightLifted());
+                }
+            }
         }
     }
 }

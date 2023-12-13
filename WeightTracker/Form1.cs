@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using System.Diagnostics;
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace WeightTracker
 {
@@ -29,12 +30,6 @@ namespace WeightTracker
             // add method to list of methods that occur during CellValidating event
             repWeightGrid.CellValidating += repWeightGrid_CellValidating;
         }
-
-        /*private void avgWeightLabel_Click(object sender, EventArgs e)
-        {
-
-        }
-        */
 
         private void repWeightGrid_CellContentClick(object sender, EventArgs e)
         {
@@ -89,7 +84,7 @@ namespace WeightTracker
             // reset the list of exercises to be reused for the next workout
             exercises.Clear();
             //MessageBox.Show(JsonString);
-            Process.Start(fileName);
+            //Process.Start(fileName);
         }
 
         // When clicked, add all field values into a new exercise object
@@ -117,9 +112,52 @@ namespace WeightTracker
 
         }
 
+        // When clicked, graph the data from the file on a chart
         private void graphButton_Click(object sender, EventArgs e)
         {
-            // Load a chart of one or more selected exercises plotted x: date / y: weights
+
+            // create chartArea
+            ChartArea chartArea = new ChartArea("WeightChartArea");
+            weightGraph.ChartAreas.Add(chartArea);
+            weightGraph.Dock = DockStyle.Fill;
+
+            // create series of data
+            Series weightSeries = new Series("Avg. rep weight");
+            weightSeries.ChartType = SeriesChartType.Point;
+
+            // Some code below is reused from submitButton eventHandler -> can be abstracted into function?
+            // read contents of WorkoutContainer from file, Use to create series for a particular exercise
+
+            //get path of file 
+            string fileName = "workoutData.json";
+            string fullPath = Path.GetFullPath(fileName);
+
+            //de-serialize contents of file into a WorkoutContainer object
+            string fileText = File.ReadAllText(fullPath);
+
+            WorkoutContainer WC = new WorkoutContainer();
+            if (!string.IsNullOrEmpty(fileText))
+            {
+                WC = JsonConvert.DeserializeObject<WorkoutContainer>(fileText);
+            }
+
+            // which exercise to graph is selected in a listBox
+            string exerciseName = graphListBox.Text;
+
+            foreach (Workout w in WC.Workouts)
+            {
+                w.addExercisesToSeries(weightSeries, exerciseName);
+            }
+
+            // Add series to chart
+            weightGraph.Series.Add(weightSeries);
+
+            // Axis labels
+            chartArea.AxisX.Title = "Date of Workout";
+            chartArea.AxisY.Title = "Average Rep Weight";
+
+
+
         }
 
         // ensure only numbers are entered into the data grid
@@ -141,6 +179,12 @@ namespace WeightTracker
                 e.Cancel = true;
             }
             
+        }
+
+        // find a way to remove this
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
     

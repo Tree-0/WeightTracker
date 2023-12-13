@@ -28,6 +28,9 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.submitButton = new System.Windows.Forms.Button();
             this.graphButton = new System.Windows.Forms.Button();
             this.exerciseBox = new System.Windows.Forms.ComboBox();
@@ -38,14 +41,18 @@
             this.WeightCol = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.addSetButton = new System.Windows.Forms.Button();
             this.addExerciseButton = new System.Windows.Forms.Button();
+            this.weightGraph = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            this.graphListBox = new System.Windows.Forms.ListBox();
+            this.instructionBox = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.repWeightGrid)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.weightGraph)).BeginInit();
             this.SuspendLayout();
             // 
             // submitButton
             // 
             this.submitButton.Location = new System.Drawing.Point(550, 201);
             this.submitButton.Name = "submitButton";
-            this.submitButton.Size = new System.Drawing.Size(75, 23);
+            this.submitButton.Size = new System.Drawing.Size(75, 52);
             this.submitButton.TabIndex = 0;
             this.submitButton.Text = "Submit";
             this.submitButton.UseVisualStyleBackColor = true;
@@ -53,9 +60,9 @@
             // 
             // graphButton
             // 
-            this.graphButton.Location = new System.Drawing.Point(550, 230);
+            this.graphButton.Location = new System.Drawing.Point(550, 422);
             this.graphButton.Name = "graphButton";
-            this.graphButton.Size = new System.Drawing.Size(75, 23);
+            this.graphButton.Size = new System.Drawing.Size(155, 52);
             this.graphButton.TabIndex = 1;
             this.graphButton.Text = "Graph";
             this.graphButton.UseVisualStyleBackColor = true;
@@ -134,7 +141,7 @@
             // 
             // addExerciseButton
             // 
-            this.addExerciseButton.Location = new System.Drawing.Point(550, 58);
+            this.addExerciseButton.Location = new System.Drawing.Point(550, 153);
             this.addExerciseButton.Name = "addExerciseButton";
             this.addExerciseButton.Size = new System.Drawing.Size(75, 42);
             this.addExerciseButton.TabIndex = 12;
@@ -142,11 +149,67 @@
             this.addExerciseButton.UseVisualStyleBackColor = true;
             this.addExerciseButton.Click += new System.EventHandler(this.addExerciseButton_Click);
             // 
+            // weightGraph
+            // 
+            chartArea2.Name = "ChartArea1";
+            this.weightGraph.ChartAreas.Add(chartArea2);
+            legend2.Name = "Legend1";
+            this.weightGraph.Legends.Add(legend2);
+            this.weightGraph.Location = new System.Drawing.Point(33, 269);
+            this.weightGraph.Name = "weightGraph";
+            series2.ChartArea = "ChartArea1";
+            series2.Legend = "Legend1";
+            series2.Name = "Series1";
+            this.weightGraph.Series.Add(series2);
+            this.weightGraph.Size = new System.Drawing.Size(496, 205);
+            this.weightGraph.TabIndex = 13;
+            this.weightGraph.Text = "chart1";
+            // 
+            // graphListBox
+            // 
+            this.graphListBox.FormattingEnabled = true;
+            this.graphListBox.Items.AddRange(new object[] {
+            "Bench Press",
+            "Squat",
+            "Deadlift",
+            "Lat Pulldown",
+            "Bicep Curls",
+            "Tricep Extensions",
+            "Shoulder Press",
+            "Lat Rows",
+            "Leg Extension",
+            "Hamstring Curls",
+            "Shoulder Shrugs ",
+            "Calf Raises",
+            "Pull-ups ",
+            "Push-ups",
+            "Shoulder Raises"});
+            this.graphListBox.Location = new System.Drawing.Point(550, 269);
+            this.graphListBox.Name = "graphListBox";
+            this.graphListBox.Size = new System.Drawing.Size(155, 147);
+            this.graphListBox.TabIndex = 14;
+            // 
+            // instructionBox
+            // 
+            this.instructionBox.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.instructionBox.Location = new System.Drawing.Point(550, 60);
+            this.instructionBox.Multiline = true;
+            this.instructionBox.Name = "instructionBox";
+            this.instructionBox.ReadOnly = true;
+            this.instructionBox.Size = new System.Drawing.Size(155, 71);
+            this.instructionBox.TabIndex = 15;
+            this.instructionBox.Text = "Fill in all data before clicking \"add exercise\". Add all exercises before clickin" +
+    "g \"submit\".";
+            this.instructionBox.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(717, 486);
+            this.ClientSize = new System.Drawing.Size(717, 499);
+            this.Controls.Add(this.instructionBox);
+            this.Controls.Add(this.graphListBox);
+            this.Controls.Add(this.weightGraph);
             this.Controls.Add(this.addExerciseButton);
             this.Controls.Add(this.addSetButton);
             this.Controls.Add(this.repWeightGrid);
@@ -159,6 +222,7 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Form1";
             ((System.ComponentModel.ISupportInitialize)(this.repWeightGrid)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.weightGraph)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -176,6 +240,9 @@
         private System.Windows.Forms.Button addExerciseButton;
         private System.Windows.Forms.DataGridViewTextBoxColumn RepsCol;
         private System.Windows.Forms.DataGridViewTextBoxColumn WeightCol;
+        private System.Windows.Forms.DataVisualization.Charting.Chart weightGraph;
+        private System.Windows.Forms.ListBox graphListBox;
+        private System.Windows.Forms.TextBox instructionBox;
     }
 }
 
