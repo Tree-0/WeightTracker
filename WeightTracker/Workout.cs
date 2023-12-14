@@ -42,22 +42,7 @@ namespace WeightTracker
             }
         }
 
-        // get/set date
-        // possibly delete??
-        /*
-        public DateTime getDateOfWorkout()
-        {
-            return this.dateOfWorkout;
-        }
-
-        public void setDateOfWorkout(DateTime d)
-        {
-            this.dateOfWorkout = d;
-        }
-        */
-
-        // return a string of all workout names, and the date
-        // perhaps add reps and weights in the future
+        // return a string of all Exercise names, and the date
         public String toString()
         {
             

@@ -83,6 +83,7 @@ namespace WeightTracker
 
             // reset the list of exercises to be reused for the next workout
             exercises.Clear();
+            exerciseInfoBox.Clear();
             //MessageBox.Show(JsonString);
             //Process.Start(fileName);
         }
@@ -107,14 +108,24 @@ namespace WeightTracker
             // Add to global var 
             exercises.Add(ex);
 
+            // Add name of exercise into textbox displaying all exercises of current workout
+            exerciseInfoBox.AppendText(ex.Name + Environment.NewLine);
+
             // display to user that it worked
-            MessageBox.Show("Exercise added");
+            //MessageBox.Show("Exercise added");
 
         }
 
         // When clicked, graph the data from the file on a chart
         private void graphButton_Click(object sender, EventArgs e)
         {
+            // create new window to open chart in
+            Form chartForm = new Form();
+            chartForm.Size = new Size(400, 300);
+
+            // create Chart and add to form
+            Chart weightGraph = new Chart();
+            chartForm.Controls.Add(weightGraph);
 
             // create chartArea
             ChartArea chartArea = new ChartArea("WeightChartArea");
@@ -156,6 +167,8 @@ namespace WeightTracker
             chartArea.AxisX.Title = "Date of Workout";
             chartArea.AxisY.Title = "Average Rep Weight";
 
+            chartForm.Show();
+
 
 
         }
@@ -181,11 +194,6 @@ namespace WeightTracker
             
         }
 
-        // find a way to remove this
-        private void textBox1_TextChanged(object sender, EventArgs e)
-        {
-
-        }
     }
     
 }
