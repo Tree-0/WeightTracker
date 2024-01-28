@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 
 namespace WeightTracker
@@ -45,9 +46,9 @@ namespace WeightTracker
         // return a string of all Exercise names, and the date
         public String toString()
         {
-            
+
             StringBuilder sb = new StringBuilder();
-            foreach(Exercise ex in this.exercises)
+            foreach (Exercise ex in this.exercises)
             {
                 sb.Append(ex.Name + " reps: " + ex.reps + " weights: " + ex.weights + "\n");
 
@@ -55,6 +56,26 @@ namespace WeightTracker
             sb.Append(this.dateOfWorkout.ToString());
 
             return sb.ToString();
+        }
+
+        // Check if a workout contains both of the input exercises
+        // TODO: Need to add buttons to the winform that support checking for this
+        //       Check if passes edge cases - more than one exercise in workout with same name, strange input arguments
+        public Boolean containsBoth(string n1, string n2) 
+        {
+            if (n1.Equals(n2)) throw new Exception("workouts must be different");
+
+            int count = 0;
+            foreach (Exercise ex in this.exercises)
+            {
+                if (ex.Name.Equals(n1) || ex.Name.Equals(n2))
+                    count++;
+            }
+
+            if (count == 2) return true;
+
+            return false;
+        
         }
 
         public Boolean Equals(Workout w)
@@ -93,6 +114,36 @@ namespace WeightTracker
                     s.Points.AddXY(this.dateOfWorkout, e.AverageWeightLifted());
                 }
             }
+        }
+        public void addRepsToSeries(Series s, string n)
+        {
+            foreach (Exercise e in this.exercises)
+            {
+                if (e.Name.Equals(n))
+                {
+                    // Add a point to the series with the date and total reps of exercise
+                    s.Points.AddXY(this.dateOfWorkout, e.TotalReps());
+                }
+            }
+        }
+
+        public void addTotalWeightToSeries(Series s, string n)
+        {
+            foreach (Exercise e in this.exercises)
+            {
+                if (e.Name.Equals(n))
+                {
+                    // Add a point to the series with the date and total weight lifted for that exercise
+                    s.Points.AddXY(this.dateOfWorkout, e.TotalWeightLifted());
+                }
+            }
+        }
+
+        // TODO: Add some sort of indicator for a given exercise if another exercise that uses similar muscles was done during the same workout
+        // idea is to be able to determine if exercise weight/rep/sets were lower because other similar exercises were also performed that day
+        public void addJointExerciseIndicatorToSeries(Series s, string n)
+        {
+
         }
     }
 }

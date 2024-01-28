@@ -29,13 +29,7 @@ namespace WeightTracker
             repWeightGrid.ReadOnly = false;
             // add method to list of methods that occur during CellValidating event
             repWeightGrid.CellValidating += repWeightGrid_CellValidating;
-        }
-
-        private void repWeightGrid_CellContentClick(object sender, EventArgs e)
-        {
-
-        }
-        
+        }      
 
         private void addSetButton_Click(object sender, EventArgs e)
         {
@@ -133,7 +127,13 @@ namespace WeightTracker
             weightGraph.Dock = DockStyle.Fill;
 
             // create series of data
-            Series weightSeries = new Series("Avg. rep weight");
+            Series avgRepWeightSeries = new Series("Avg. rep weight");
+            avgRepWeightSeries.ChartType = SeriesChartType.Point;
+
+            Series repSeries = new Series("Total reps");
+            repSeries.ChartType = SeriesChartType.Point;
+
+            Series weightSeries = new Series("Total weight lifted");
             weightSeries.ChartType = SeriesChartType.Point;
 
             // Some code below is reused from submitButton eventHandler -> can be abstracted into function?
@@ -151,25 +151,43 @@ namespace WeightTracker
             {
                 WC = JsonConvert.DeserializeObject<WorkoutContainer>(fileText);
             }
+            // END of reused code, can this be abstracted?s
 
             // which exercise to graph is selected in a listBox
             string exerciseName = graphListBox.Text;
 
             foreach (Workout w in WC.Workouts)
             {
-                w.addExercisesToSeries(weightSeries, exerciseName);
+                w.addExercisesToSeries(avgRepWeightSeries, exerciseName);
+                w.addRepsToSeries(repSeries, exerciseName);
+                w.addTotalWeightToSeries(weightSeries, exerciseName);
             }
 
             // Add series to chart
-            weightGraph.Series.Add(weightSeries);
+            weightGraph.Series.Add(avgRepWeightSeries);
+            weightGraph.Series.Add(repSeries);
+            //weightGraph.Series.Add(weightSeries);
+
+            // Make Datapoints more visible
+            avgRepWeightSeries.MarkerSize = 10;
+            repSeries.MarkerSize = 10;
+            //weightSeries.MarkerSize = 10;
+
 
             // Axis labels
             chartArea.AxisX.Title = "Date of Workout";
-            chartArea.AxisY.Title = "Average Rep Weight";
+            
+            //  Legend for Series
+            Legend key = new Legend();
+            weightGraph.Legends.Add(key);
 
+            // Add labels for each series to legend
+            weightGraph.Series["Avg. rep weight"].LegendText = "Average rep weight";
+            weightGraph.Series["Total reps"].LegendText = "Total reps";
+            //weightGraph.Series["Total weight lifted"].LegendText = "Total weight lifted";
+
+            // display graph upon button press
             chartForm.Show();
-
-
 
         }
 

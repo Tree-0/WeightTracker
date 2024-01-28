@@ -74,6 +74,7 @@
             "Chest Flys",
             "Bicep Curls",
             "Tricep Extensions",
+            "Incline Bench",
             "Shoulder Press",
             "Shoulder Raises",
             "Lat Pulldown",
@@ -121,7 +122,6 @@
             this.repWeightGrid.Name = "repWeightGrid";
             this.repWeightGrid.Size = new System.Drawing.Size(244, 195);
             this.repWeightGrid.TabIndex = 10;
-            this.repWeightGrid.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.repWeightGrid_CellContentClick);
             // 
             // RepsCol
             // 
@@ -162,6 +162,7 @@
             "Chest Flys",
             "Bicep Curls",
             "Tricep Extensions",
+            "Incline Bench",
             "Shoulder Press",
             "Shoulder Raises",
             "Lat Pulldown",

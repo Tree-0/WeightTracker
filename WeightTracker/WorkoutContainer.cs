@@ -20,7 +20,10 @@ namespace WeightTracker
             Workouts = workouts;
         }
 
+        //
         // Methods
+        //
+        
         public void Add(Workout w)
         {
             Workouts.Add(w);
