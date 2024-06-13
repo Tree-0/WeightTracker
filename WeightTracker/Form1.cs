@@ -13,6 +13,16 @@ using System.IO;
 using System.Diagnostics;
 using System.Windows.Forms.DataVisualization.Charting;
 
+//
+// Nathaniel Stall
+//
+// Personal project - Track workouts, visualize them to see progress.
+// Eventually add more features... calculations, making workout plans...
+//
+// Features Checklist: 
+// https://docs.google.com/document/d/1ylS3EJpUSgirsgJCRAvSfPP_sIsRLDkDQlpYvgdLyCU/edit
+//
+
 namespace WeightTracker
 {
     public partial class Form1 : Form
@@ -41,7 +51,11 @@ namespace WeightTracker
             //Store the created list of exercises, along with the date, in a new workout object
             DateTime selectedDate = monthCalendar1.SelectionStart.Date;
             Workout w = new Workout(exercises, selectedDate);
-
+    //
+    //
+    // CHANGE FROM JSON SERIALIZER/DESERIALIZER TO WORKOUTDAL ADDING TO DATABASE
+    //
+    //
             //get path of file 
             string fileName = "workoutData.json";
             string fullPath = Path.GetFullPath(fileName);
@@ -138,6 +152,12 @@ namespace WeightTracker
 
             // Some code below is reused from submitButton eventHandler -> can be abstracted into function?
             // read contents of WorkoutContainer from file, Use to create series for a particular exercise
+
+     //
+     //
+     // CHANGE FROM JSON TO WORKOUTDAL READING FROM DB 
+     //
+     //
 
             //get path of file 
             string fileName = "workoutData.json";

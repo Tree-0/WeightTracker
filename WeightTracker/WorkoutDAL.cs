@@ -5,11 +5,10 @@ namespace WeightTracker
 {
     public class WorkoutDAL
     {
-        public WorkoutDAL()
-        {
+        // Constructor
+        public WorkoutDAL() { }
 
-        }
-
+        // Open and return a connection the database
         public static SQLiteConnection ConnectToDatabase(string dbFilePath)
         {
             var connectionString = new SQLiteConnectionStringBuilder { DataSource = dbFilePath }.ToString();
@@ -17,6 +16,12 @@ namespace WeightTracker
             connection.Open();
             return connection;
         }
+
+
+        //
+        // CRUD functionality
+        //
+
 
         // Add the date and notes for a workout to the Workout table
         public void AddWorkout(SQLiteConnection connection, Workout workout)
@@ -80,6 +85,104 @@ namespace WeightTracker
             }
         }
 
+        // Delete the selected workout - also deletes all associated exercises and exercise information 
+        public void DeleteWorkoutByDate(SQLiteConnection connection, DateTime workoutDate)
+        {   
+            int workoutId = GetWorkoutIdByDate(connection, workoutDate);
+
+            // delete each exercise with a key that points to workoutId
+            string sql = "Select ExerciseId FROM Exercises WHERE WorkoutId = @WorkoutId";
+            using (var cmd = new SQLiteCommand(sql, connection))
+            {
+                cmd.Parameters.AddWithValue("@WorkoutId", workoutId);
+
+                using (SQLiteDataReader reader = cmd.ExecuteReader())
+                {
+                    // iterate through results of selection and manipulate data
+                    while (reader.Read())
+                    {
+                        int ExerciseId = reader.GetInt32(0);
+                        Console.WriteLine($"Exercise ID: {ExerciseId}, Workout ID: {workoutId}");
+                        DeleteExercises(connection, workoutId); // Delete the exercise
+                    }
+                }
+            }
+
+            // delete workouts
+            sql = "DELETE from Workouts WHERE Date = @Date";
+            using (var cmd = new SQLiteCommand(sql, connection))
+            {
+                cmd.Parameters.AddWithValue("@Date", workoutDate);
+
+                int affectedRows = cmd.ExecuteNonQuery();
+                Console.WriteLine($"{affectedRows} rows deleted in Workouts"); //debug
+            }
+        }
+
+        // Delete the exercises associated with the workout - also deletes all associated exercise information (reps, weights)
+        public void DeleteExercises(SQLiteConnection connection, int workoutId)
+        {
+            // delete reps and weights for exercise
+            string sql = "SELECT ExerciseId from Exercises WHERE WorkoutId = @WorkoutId";
+            using (var cmd = new SQLiteCommand(sql, connection))
+            {
+                cmd.Parameters.AddWithValue("@WorkoutId", workoutId);
+                using (SQLiteDataReader reader = cmd.ExecuteReader())
+                {
+                    // iterate through results of selection and manipulate data
+                    while (reader.Read())
+                    {
+                        int ExerciseId = reader.GetInt32(0);
+                        
+                        DeleteRepsWeights(connection, ExerciseId); // Delete all set information for an exercise
+                    }
+                }
+            }
+
+            // delete exercise
+            sql = "DELETE from Exercises WHERE WorkoutId = @WorkoutId";
+            using (var cmd = new SQLiteCommand(sql, connection))
+            {
+                cmd.Parameters.AddWithValue("@WorkoutId", workoutId);
+
+                int affectedRows = cmd.ExecuteNonQuery();
+                Console.WriteLine($"{affectedRows} rows deleted in Exercises"); //debug
+            }
+        }
+
+        // Delete the reps and weights for an exercise
+        public void DeleteRepsWeights(SQLiteConnection connection, int exerciseId)
+        {
+            string sql = "DELETE from RepsWeights WHERE ExerciseId = @ExerciseId";
+            using (var cmd = new SQLiteCommand(sql, connection))
+            {
+                cmd.Parameters.AddWithValue("@ExerciseId", exerciseId);
+
+                int affectedRows = cmd.ExecuteNonQuery();
+                Console.WriteLine($"{affectedRows} rows deleted in RepsWeights"); //debug
+            }
+        }
+
+        // Delete a specific set of an exercise
+        public void DeleteRepsWeights(SQLiteConnection connection, int exerciseId, int setNumber)
+        {
+            string sql = "DELETE from RepsWeights WHERE ExerciseId = @ExerciseId AND SetNumber = @SetNumber";
+            using (var cmd = new SQLiteCommand(sql, connection))
+            {
+                cmd.Parameters.AddWithValue("@ExerciseId", exerciseId);
+                cmd.Parameters.AddWithValue("@SetNumber", setNumber);
+
+                int affectedRows = cmd.ExecuteNonQuery();
+                Console.WriteLine($"{affectedRows} rows deleted in RepsWeights"); //debug
+            }
+        }
+
+
+        //
+        // Getters
+        //
+
+
         // Find a unique workout in the db, return the id number
         public int GetWorkoutIdByDate(SQLiteConnection connection, DateTime workoutDate)
         {
@@ -121,5 +224,26 @@ namespace WeightTracker
             }
         }
 
+        // Find a particular set of an exercise in the db, return the id number
+        public int GetRepWeightId(SQLiteConnection connection, int exerciseId, int setNumber)
+        {
+            string sql = "SELECT RepsWeightsId FROM RepsWeights WHERE ExerciseId = @ExerciseId AND SetNumber = @SetNumber";
+            using (var cmd = new SQLiteCommand(sql, connection))
+            {
+                cmd.Parameters.AddWithValue("ExerciseId", exerciseId);
+                cmd.Parameters.AddWithValue("SetNumber", setNumber);
+                using (var reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        return reader.GetInt32(0);
+                    }
+                    else
+                    {
+                        return -1; // throw an exception if the exercise information does not exist
+                    }
+                }
+            }
+        }
     }
 }

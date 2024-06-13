@@ -12,7 +12,7 @@ namespace WeightTracker
     [TestFixture]
     internal class DBTests
     {
-        [Test]
+        [Test, Order(1)]
         public void WriteToDB() 
         {   
             List<Exercise> exercises = new List<Exercise>();
@@ -20,6 +20,7 @@ namespace WeightTracker
             int[] reps = new int[] { 10, 10, 10, 10 };
             int[] weights = new int[] { 135, 155, 175, 185 };
             Exercise e1 = new Exercise("bench press", 4, reps, weights);
+
             reps = new int[] { 10, 10, 8, 8 };
             weights = new int[] { 50, 50, 55, 55 };
             Exercise e2 = new Exercise("shoulder press", 4, reps, weights);
@@ -37,6 +38,17 @@ namespace WeightTracker
             SQLiteConnection connection = WorkoutDAL.ConnectToDatabase(dbFilePath);
 
             workoutDAL.AddWorkout(connection, workout);
+        }
+
+        [Test, Order(2)]
+        public void DeleteFromDB()
+        {
+            WorkoutDAL workoutDAL = new WorkoutDAL();
+            string dbFilePath = "C:\\Users\\Natha\\OneDrive\\Desktop\\SQLite\\Workouts.db";
+            SQLiteConnection connection = WorkoutDAL.ConnectToDatabase(dbFilePath);
+
+            DateTime date = DateTime.Now.Date;
+            workoutDAL.DeleteWorkoutByDate(connection, date);
         }
     }
 }
