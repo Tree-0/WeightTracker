@@ -10,8 +10,8 @@ namespace WeightTracker
     {
         public String Name { get; set; }   // name of exercise
         public int sets { get; set; }     // number of sets done
-        public int[] reps { get; set; }   // a list of numbers, one entry per set
-        public int[] weights { get; set; } // a list of numbers, one entry per set
+        public int[] reps { get; set; }   // number of repetitions of a movement done, one entry per set
+        public int[] weights { get; set; } // weight used for movement, one entry per set
 
         // Constructor
         public Exercise(string n, int s, int[] r, int[] w)
