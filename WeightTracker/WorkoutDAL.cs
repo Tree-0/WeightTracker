@@ -188,6 +188,29 @@ namespace WeightTracker
 
         // // READ 
 
+        // Return All Workouts in DB
+        public  List<Workout> GetAllWorkouts(SQLiteConnection connection)
+        {
+            List<Workout> workouts = new List<Workout>();
+
+            using (var cmd = new SQLiteCommand("SELECT WorkoutId, Date, Notes FROM Workouts", connection))
+            {
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        DateTime date = reader.GetDateTime(reader.GetOrdinal("Date"));
+                        string notes = reader.GetString(reader.GetOrdinal("Notes"));
+                        int workoutId = reader.GetInt32(reader.GetOrdinal("WorkoutId"));
+                        List<Exercise> exercises = GetExercises(connection, workoutId);
+                        workouts.Add(new Workout(exercises, date));
+                    }
+                }
+            }
+
+            return workouts;
+        }
+
         // Find a unique workout in the db, return a Workout OBJECT
         public Workout GetWorkoutByDate(SQLiteConnection connection, DateTime workoutDate)
         {

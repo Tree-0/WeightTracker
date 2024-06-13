@@ -12,6 +12,7 @@ using System.Windows.Forms;
 using System.IO;
 using System.Diagnostics;
 using System.Windows.Forms.DataVisualization.Charting;
+using System.Data.SQLite;
 
 //
 // Nathaniel Stall
@@ -51,49 +52,19 @@ namespace WeightTracker
             //Store the created list of exercises, along with the date, in a new workout object
             DateTime selectedDate = monthCalendar1.SelectionStart.Date;
             Workout w = new Workout(exercises, selectedDate);
-    //
-    //
-    // CHANGE FROM JSON SERIALIZER/DESERIALIZER TO WORKOUTDAL ADDING TO DATABASE
-    //
-    //
-            //get path of file 
-            string fileName = "workoutData.json";
-            string fullPath = Path.GetFullPath(fileName);
 
-            //de-serialize contents of file into a WorkoutContainer object
-            string fileText = File.ReadAllText(fullPath);
+            // connect to the database
+            string dbFilePath = "C:\\Users\\Natha\\OneDrive\\Desktop\\SQLite\\Workouts.db";
+            SQLiteConnection connection = WorkoutDAL.ConnectToDatabase(dbFilePath);
 
-            // check if there is anything in file - if there is, put it in WorkoutContainer object 
-            // if nothing in file, create new WC object
-            WorkoutContainer WC = new WorkoutContainer();
-            try
-            {
-                //Try to create a container from data in file
-                if (!string.IsNullOrEmpty(fileText))
-                {
-                    WC = JsonConvert.DeserializeObject<WorkoutContainer>(fileText);
-                }
-            } 
-            catch (JsonReaderException err) 
-            {
-                //show user error message and create an empty WorkoutContainer
-                MessageBox.Show($"error reading data from file: {err.Message}");
-                return;
-            }
-
-            WC.Add(w); //Add the newest workout to the container
-            
-            // Re-Serialize WorkoutContainer object and put back into file
-            string JsonString = JsonConvert.SerializeObject(WC, Formatting.Indented);           
-            File.WriteAllText(fullPath, JsonString);
+            WorkoutDAL DAL = new WorkoutDAL();
+            DAL.AddWorkout(connection, w);
 
             MessageBox.Show("Workout Submitted");
 
             // reset the list of exercises to be reused for the next workout
             exercises.Clear();
             exerciseInfoBox.Clear();
-            //MessageBox.Show(JsonString);
-            //Process.Start(fileName);
         }
 
         // When clicked, add all field values into a new exercise object
@@ -101,6 +72,12 @@ namespace WeightTracker
         {
             //creating values for Exercise 
             String name = exerciseBox.Text;
+
+            if (String.IsNullOrEmpty(name)) {
+                MessageBox.Show("Please select an exercise.", "Invalid input", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             int sets = repWeightGrid.RowCount - 1; // -1 because there is always an empty last row
 
             // From the table in the window, generate lists of reps and weights
@@ -153,30 +130,18 @@ namespace WeightTracker
             // Some code below is reused from submitButton eventHandler -> can be abstracted into function?
             // read contents of WorkoutContainer from file, Use to create series for a particular exercise
 
-     //
-     //
-     // CHANGE FROM JSON TO WORKOUTDAL READING FROM DB 
-     //
-     //
+            // connect to the database
+            string dbFilePath = "C:\\Users\\Natha\\OneDrive\\Desktop\\SQLite\\Workouts.db";
+            SQLiteConnection connection = WorkoutDAL.ConnectToDatabase(dbFilePath);
 
-            //get path of file 
-            string fileName = "workoutData.json";
-            string fullPath = Path.GetFullPath(fileName);
+            WorkoutDAL DAL = new WorkoutDAL();
 
-            //de-serialize contents of file into a WorkoutContainer object
-            string fileText = File.ReadAllText(fullPath);
-
-            WorkoutContainer WC = new WorkoutContainer();
-            if (!string.IsNullOrEmpty(fileText))
-            {
-                WC = JsonConvert.DeserializeObject<WorkoutContainer>(fileText);
-            }
-            // END of reused code, can this be abstracted?s
+            List<Workout> workouts = DAL.GetAllWorkouts(connection);
 
             // which exercise to graph is selected in a listBox
             string exerciseName = graphListBox.Text;
 
-            foreach (Workout w in WC.Workouts)
+            foreach (Workout w in workouts)
             {
                 w.addExercisesToSeries(avgRepWeightSeries, exerciseName);
                 w.addRepsToSeries(repSeries, exerciseName);
@@ -231,7 +196,6 @@ namespace WeightTracker
             }
             
         }
-
     }
     
 }

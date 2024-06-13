@@ -53,7 +53,7 @@ namespace WeightTracker
         }
 
         // gets the average weight lifted for each rep
-        public int AverageWeightLifted()
+        public float AverageWeightLifted()
         {
             return this.TotalWeightLifted() / this.TotalReps();
         }
