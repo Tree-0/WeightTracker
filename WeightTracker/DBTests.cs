@@ -41,6 +41,33 @@ namespace WeightTracker
         }
 
         [Test, Order(2)]
+        public void ReadObjectsFromDB()
+        {
+            WorkoutDAL workoutDAL = new WorkoutDAL();
+
+            string dbFilePath = "C:\\Users\\Natha\\OneDrive\\Desktop\\SQLite\\Workouts.db";
+            SQLiteConnection connection = WorkoutDAL.ConnectToDatabase(dbFilePath);
+
+            Workout readWorkout = workoutDAL.GetWorkoutByDate(connection, DateTime.Now.Date);
+            Console.WriteLine($"DateTime.Now.Date: {DateTime.Now.Date}");
+
+            List<Exercise> exercises = new List<Exercise>();
+            int[] reps = new int[] { 10, 10, 10, 10 };
+            int[] weights = new int[] { 135, 155, 175, 185 };
+            Exercise e1 = new Exercise("bench press", 4, reps, weights);
+            reps = new int[] { 10, 10, 8, 8 };
+            weights = new int[] { 50, 50, 55, 55 };
+            Exercise e2 = new Exercise("shoulder press", 4, reps, weights);
+            exercises.Add(e1);
+            exercises.Add(e2);
+            DateTime date = DateTime.Now.Date;
+
+            Workout workout = new Workout(exercises, date);
+
+            Assert.That(readWorkout.Equals(workout));
+        }
+
+        [Test, Order(3)]
         public void DeleteFromDB()
         {
             WorkoutDAL workoutDAL = new WorkoutDAL();

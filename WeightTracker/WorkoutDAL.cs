@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Data.SQLite;
+using System.Collections.Generic;
+using System.Security;
 
 namespace WeightTracker
 {
@@ -33,6 +35,7 @@ namespace WeightTracker
                 cmd.ExecuteNonQuery();
             }
 
+            // Add workout's exercises to the Exercises table
             foreach (Exercise e in workout.exercises)
             {
                 AddExercise(connection, e, workout.dateOfWorkout);
@@ -225,7 +228,7 @@ namespace WeightTracker
         }
 
         // Find a particular set of an exercise in the db, return the id number
-        public int GetRepWeightId(SQLiteConnection connection, int exerciseId, int setNumber)
+        public int GetRepsWeightsId(SQLiteConnection connection, int exerciseId, int setNumber)
         {
             string sql = "SELECT RepsWeightsId FROM RepsWeights WHERE ExerciseId = @ExerciseId AND SetNumber = @SetNumber";
             using (var cmd = new SQLiteCommand(sql, connection))
@@ -245,5 +248,96 @@ namespace WeightTracker
                 }
             }
         }
+
+        // Find a unique workout in the db, return a Workout OBJECT
+        public Workout GetWorkoutByDate(SQLiteConnection connection, DateTime workoutDate)
+        {
+            Workout workout = new Workout();
+            List<Exercise> exercises;
+            
+            // retrieve the notes from the workout table
+            using (var cmd = new SQLiteCommand("SELECT WorkoutId, Notes FROM Workouts WHERE Date = @date", connection))
+            {
+                cmd.Parameters.AddWithValue("@date", workoutDate);
+                using (var reader = cmd.ExecuteReader())
+                {
+                    if (!reader.HasRows)
+                    {
+                        throw new InvalidOperationException("No workouts found for the specified date.");
+                    }
+
+                    if (reader.Read())
+                    {
+                        // read relevant data
+                        int workoutId = reader.GetInt32(reader.GetOrdinal("WorkoutId"));
+                        string notes = reader.GetString(reader.GetOrdinal("Notes"));
+
+                        // retrieve the exercises from the exercise table
+                        exercises = GetExercises(connection, workoutId);
+
+                        workout.dateOfWorkout = workoutDate;
+                        workout.notes = notes;  
+                        workout.exercises = exercises;
+                    }
+                }
+            }
+
+            return workout;
+
+        }
+
+        // Find exercises from a given workout, return a list of Exercise OBJECTS
+        public List<Exercise> GetExercises(SQLiteConnection connection, int workoutId) 
+        {
+            List<Exercise> exercises = new List<Exercise>();
+            Tuple<int[], int[]> repsWeights;
+
+            using (var cmd = new SQLiteCommand("SELECT ExerciseID, Name, Sets FROM Exercises WHERE WorkoutId = @workoutId", connection))
+            {
+                cmd.Parameters.AddWithValue("@workoutId", workoutId);
+                using (var reader = cmd.ExecuteReader())
+                {
+                    // for every selected exercise, format data into objects and add to list
+                    while (reader.Read())
+                    {
+                        int exerciseId = reader.GetInt32(reader.GetOrdinal("ExerciseID"));
+                        string name = reader.GetString(reader.GetOrdinal("Name"));
+                        int sets = reader.GetInt32(reader.GetOrdinal("Sets"));
+
+                        // need to get rep and weight information from respective table
+                        repsWeights = GetRepsWeights(connection, exerciseId, sets);
+
+                        exercises.Add(new Exercise(name, sets, repsWeights.Item1, repsWeights.Item2));
+                    }
+                }
+            }
+
+            return exercises;
+        }
+
+        public Tuple<int[], int[]> GetRepsWeights(SQLiteConnection connection, int exerciseId, int sets)
+        {
+            int[] reps = new int[sets];
+            int[] weights = new int[sets];
+
+            using (var cmd = new SQLiteCommand("SELECT Reps, Weight FROM RepsWeights WHERE ExerciseId = @exerciseId", connection))
+            {
+                cmd.Parameters.AddWithValue("@exerciseId", exerciseId);
+                using (var reader = cmd.ExecuteReader())
+                {
+                    // for every selected row, add reps and weights into arrays
+                    int i = 0;
+                    while (reader.Read())
+                    {
+                        reps[i] = reader.GetInt32(reader.GetOrdinal("Reps"));
+                        weights[i] = reader.GetInt32(reader.GetOrdinal("Weight"));
+                        i++;
+                    }
+                }
+            }
+
+            return Tuple.Create(reps, weights);
+        }
+        
     }
 }

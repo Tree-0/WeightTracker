@@ -12,8 +12,8 @@ namespace WeightTracker
     {
 
         public List<Exercise> exercises { get; set; }   // The list of exercises from the workout
-        public DateTime dateOfWorkout; // the date the workout was completed
-        public String notes;           // any additional information about the workout
+        public DateTime dateOfWorkout { get; set; } // the date the workout was completed
+        public String notes { get; set; }           // any additional information about the workout
 
         //Constructors
         public Workout() { }
@@ -21,7 +21,7 @@ namespace WeightTracker
         public Workout(List<Exercise> loe, DateTime d)
         {
             exercises = loe;
-            dateOfWorkout = d;
+            dateOfWorkout = d.Date;
             notes = string.Empty;
         }
 
