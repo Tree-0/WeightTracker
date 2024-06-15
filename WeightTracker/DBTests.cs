@@ -34,10 +34,7 @@ namespace WeightTracker
 
             WorkoutDAL workoutDAL = new WorkoutDAL();
 
-            string dbFilePath = "C:\\Users\\Natha\\OneDrive\\Desktop\\SQLite\\Workouts.db";
-            SQLiteConnection connection = WorkoutDAL.ConnectToDatabase(dbFilePath);
-
-            workoutDAL.AddWorkout(connection, workout);
+            workoutDAL.AddWorkout(workout);
         }
 
         // Test relies on data being written in Test WriteToDB
@@ -46,11 +43,8 @@ namespace WeightTracker
         {
             WorkoutDAL workoutDAL = new WorkoutDAL();
 
-            string dbFilePath = "C:\\Users\\Natha\\OneDrive\\Desktop\\SQLite\\Workouts.db";
-            SQLiteConnection connection = WorkoutDAL.ConnectToDatabase(dbFilePath);
-
             // Read workout from DB
-            Workout readWorkout = workoutDAL.GetWorkoutByDate(connection, DateTime.Now.Date);
+            Workout readWorkout = workoutDAL.GetWorkoutByDate(DateTime.Now.Date);
             Console.WriteLine($"DateTime.Now.Date: {DateTime.Now.Date}");
 
             // Create workout manually
@@ -75,10 +69,10 @@ namespace WeightTracker
             Tuple<int, int> benchSetFour = Tuple.Create(workout.exercises[0].reps[3], workout.exercises[0].weights[3]);
 
             // DB data - should match manual data
-            int benchId = workoutDAL.GetExerciseId(connection, workoutDAL.GetWorkoutIdByDate(connection, date), "bench press");
-            int shoulderId = workoutDAL.GetExerciseId(connection, workoutDAL.GetWorkoutIdByDate(connection, date), "shoulder press");
-            Tuple<int[], int[]> readBenchRepsWeights = workoutDAL.GetRepsWeights(connection, benchId, 4);
-            Tuple<int[], int[]> readShoulderRepsWeights = workoutDAL.GetRepsWeights(connection, shoulderId, 4);
+            int benchId = workoutDAL.GetExerciseId(workoutDAL.GetWorkoutIdByDate(date), "bench press");
+            int shoulderId = workoutDAL.GetExerciseId(workoutDAL.GetWorkoutIdByDate(date), "shoulder press");
+            Tuple<int[], int[]> readBenchRepsWeights = workoutDAL.GetRepsWeights(benchId, 4);
+            Tuple<int[], int[]> readShoulderRepsWeights = workoutDAL.GetRepsWeights(shoulderId, 4);
 
             #region debug prints
             string strreps = String.Join(", ", benchRepsWeights.Item1);
@@ -94,8 +88,8 @@ namespace WeightTracker
             Assert.That(readWorkout.Equals(workout));
 
             // DB Exercise and manual Exercise should be the same
-            Assert.That(e1.Equals(workoutDAL.GetExerciseByName(connection, workoutDAL.GetWorkoutIdByDate(connection, DateTime.Now.Date), e1.Name)));
-            Assert.That(e2.Equals(workoutDAL.GetExerciseByName(connection, workoutDAL.GetWorkoutIdByDate(connection, DateTime.Now.Date), e2.Name)));
+            Assert.That(e1.Equals(workoutDAL.GetExerciseByName(workoutDAL.GetWorkoutIdByDate(DateTime.Now.Date), e1.Name)));
+            Assert.That(e2.Equals(workoutDAL.GetExerciseByName(workoutDAL.GetWorkoutIdByDate(DateTime.Now.Date), e2.Name)));
 
             // reps and weights from DB and manual workout should match 
             bool arraysEqual = benchRepsWeights.Item1.SequenceEqual(readBenchRepsWeights.Item1) &&
@@ -106,24 +100,22 @@ namespace WeightTracker
                           shoulderRepsWeights.Item2.SequenceEqual(readShoulderRepsWeights.Item2);
             Assert.That(arraysEqual);
 
-            bool intsEqual = benchSetOne.Item1 == workoutDAL.GetRepsWeightsOneSet(connection, benchId, 1).Item1;
+            bool intsEqual = benchSetOne.Item1 == workoutDAL.GetRepsWeightsOneSet(benchId, 1).Item1;
             Assert.That(intsEqual);
-            intsEqual = benchSetOne.Item2 == workoutDAL.GetRepsWeightsOneSet(connection, benchId, 1).Item2;
+            intsEqual = benchSetOne.Item2 == workoutDAL.GetRepsWeightsOneSet(benchId, 1).Item2;
             Assert.That(intsEqual);
-            intsEqual = benchSetFour.Item1 == workoutDAL.GetRepsWeightsOneSet(connection, benchId, 4).Item1;
+            intsEqual = benchSetFour.Item1 == workoutDAL.GetRepsWeightsOneSet(benchId, 4).Item1;
             Assert.That(intsEqual);
-            intsEqual = benchSetFour.Item2 == workoutDAL.GetRepsWeightsOneSet(connection, benchId, 4).Item2;
+            intsEqual = benchSetFour.Item2 == workoutDAL.GetRepsWeightsOneSet(benchId, 4).Item2;
         }
 
         [Test, Order(3)]
         public void DeleteFromDB()
         {
             WorkoutDAL workoutDAL = new WorkoutDAL();
-            string dbFilePath = "C:\\Users\\Natha\\OneDrive\\Desktop\\SQLite\\Workouts.db";
-            SQLiteConnection connection = WorkoutDAL.ConnectToDatabase(dbFilePath);
 
             DateTime date = DateTime.Now.Date;
-            workoutDAL.DeleteWorkoutByDate(connection, date);
+            workoutDAL.DeleteWorkoutByDate(date);
         }
     }
 }

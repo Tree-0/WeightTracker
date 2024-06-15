@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -34,6 +35,19 @@ namespace WeightTracker
             return false;
         }
 
+        override public String ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append(Name + ": " + Environment.NewLine);
+
+            for (int i = 0; i < sets; i++)
+            {
+                sb.Append("(" + this.weights[i].ToString() + " * " + this.reps[i].ToString() + ") " + Environment.NewLine);
+            }
+
+            return sb.ToString();
+        }
+
         // gets the total number of reps across all sets of the exercise
         public int TotalReps()
         {
@@ -55,6 +69,11 @@ namespace WeightTracker
         // gets the average weight lifted for each rep
         public float AverageWeightLifted()
         {
+            if (this.TotalReps() == 0) 
+            {
+                Console.WriteLine("No Reps -- Attempt to divide by zero");
+                return 0.0f; 
+            }
             return this.TotalWeightLifted() / this.TotalReps();
         }
     }

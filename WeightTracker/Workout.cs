@@ -46,16 +46,17 @@ namespace WeightTracker
         }
 
         // return a string of all Exercise names, and the date
-        public String toString()
+        override public String ToString()
         {
 
             StringBuilder sb = new StringBuilder();
             foreach (Exercise ex in this.exercises)
             {
-                sb.Append(ex.Name + " reps: " + ex.reps + " weights: " + ex.weights + "\n");
-
+                sb.Append(ex.ToString());
             }
-            sb.Append(this.dateOfWorkout.ToString());
+            
+            // Don't really need this because of how I structured the Form
+            //sb.Append(this.dateOfWorkout.ToString());
 
             return sb.ToString();
         }

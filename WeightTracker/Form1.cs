@@ -53,12 +53,8 @@ namespace WeightTracker
             DateTime selectedDate = monthCalendar1.SelectionStart.Date;
             Workout w = new Workout(exercises, selectedDate);
 
-            // connect to the database
-            string dbFilePath = "C:\\Users\\Natha\\OneDrive\\Desktop\\SQLite\\Workouts.db";
-            SQLiteConnection connection = WorkoutDAL.ConnectToDatabase(dbFilePath);
-
             WorkoutDAL DAL = new WorkoutDAL();
-            DAL.AddWorkout(connection, w);
+            DAL.AddWorkout(w);
 
             MessageBox.Show("Workout Submitted");
 
@@ -127,16 +123,11 @@ namespace WeightTracker
             Series weightSeries = new Series("Total weight lifted");
             weightSeries.ChartType = SeriesChartType.Point;
 
-            // Some code below is reused from submitButton eventHandler -> can be abstracted into function?
-            // read contents of WorkoutContainer from file, Use to create series for a particular exercise
-
-            // connect to the database
-            string dbFilePath = "C:\\Users\\Natha\\OneDrive\\Desktop\\SQLite\\Workouts.db";
-            SQLiteConnection connection = WorkoutDAL.ConnectToDatabase(dbFilePath);
+            // 
 
             WorkoutDAL DAL = new WorkoutDAL();
 
-            List<Workout> workouts = DAL.GetAllWorkouts(connection);
+            List<Workout> workouts = DAL.GetAllWorkouts();
 
             // which exercise to graph is selected in a listBox
             string exerciseName = graphListBox.Text;
@@ -176,6 +167,123 @@ namespace WeightTracker
 
         }
 
+        // Get date from monthCalendar, check for workouts in DB, and display info to the WorkoutDisplayBox
+        private void UpdateWorkoutDisplayBox()
+        {
+            WorkoutDAL DAL = new WorkoutDAL();
+            DateTime selectedDate = monthCalendar1.SelectionStart.Date;
+
+            // Display date of workout selected
+            workoutDisplayBoxLabel.Text = "Workout Date: " + selectedDate.ToString();
+
+            // Display workout information, if there is any
+            Workout W;
+            try
+            {
+                W = DAL.GetWorkoutByDate(selectedDate);
+                workoutDisplayBox.Text = W.ToString();
+            }
+            catch
+            {
+                workoutDisplayBox.Text = "No Workout On Selected Date";
+            }
+        }
+
+        // Whenever a date on the calendar is selected, check if any workout occurred on that date and display it
+        private void monthCalendar1_DateSelected(object sender, DateRangeEventArgs e)
+        {
+            UpdateWorkoutDisplayBox();
+        }
+
+        // When clicked, delete the selected workout from the DB and update displays accordingly
+        private void deleteWorkoutButton_Click(object sender, EventArgs e)
+        {
+            DialogResult result = MessageBox.Show("Delete this workout?", "Confirmation", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
+
+            // Handle the result
+            switch (result)
+            {
+                case DialogResult.OK: // deletion confirmed
+                    WorkoutDAL DAL = new WorkoutDAL();
+                    DAL.DeleteWorkoutByDate(monthCalendar1.SelectionStart.Date);
+                    UpdateWorkoutDisplayBox(); // show that workout was deleted
+                    break;
+                case DialogResult.Cancel: // cancel action
+                    break;
+            }
+        }
+
+        // Delete an exercise from the current workout, based on the name selected in the drop down menu on the left hand side
+        private void deleteExerciseButton_Click(object sender, EventArgs e)
+        {
+            DialogResult result = MessageBox.Show($"Delete {graphListBox.Text} from workout?", "Confirmation", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
+            
+            // Handle the result
+            switch (result)
+            {
+                case DialogResult.OK: // deletion confirmed
+                    WorkoutDAL DAL = new WorkoutDAL();
+                    DAL.DeleteExerciseByName(DAL.GetWorkoutIdByDate(monthCalendar1.SelectionStart.Date), graphListBox.Text);
+                    UpdateWorkoutDisplayBox(); // show that workout was deleted
+                    break;
+                case DialogResult.Cancel: // cancel action
+                    break;
+            }
+        }
+
+        // Delete a set from a selected exercise of the current workout, based on number input to a text box
+        private void deleteSetButton_Click(object sender, EventArgs e)
+        {
+            WorkoutDAL DAL = new WorkoutDAL();
+            int workoutId = DAL.GetWorkoutIdByDate(monthCalendar1.SelectionStart.Date);
+
+            // Validate the set number 
+            if (!setToDeleteBox_Validating(workoutId)) { return; }
+            int set = int.Parse(setToDeleteBox.Text);
+
+            DialogResult result = MessageBox.Show($"Delete set {setToDeleteBox.Text} from {graphListBox.Text}?", "Confirmation", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
+
+            // Handle the result
+            switch (result)
+            {
+                case DialogResult.OK: // deletion confirmed
+                    int exerciseId = DAL.GetExerciseId(workoutId, graphListBox.Text);
+                    DAL.DeleteRepsWeights(exerciseId, set);
+                    UpdateWorkoutDisplayBox(); // show that workout was updated, set deleted
+                    break;
+                case DialogResult.Cancel: // cancel action
+                    break;
+            }
+        }
+
+        // ensure an int between 1 and the total sets for that exercise is used
+        // I'm not sure if this is the appropriate way to validate. 
+        // This method does not subscribe to an event like repWeightGrid_CellValidating...
+        private bool setToDeleteBox_Validating(int workoutId)
+        {
+            if (!int.TryParse(setToDeleteBox.Text, out _))
+            {
+                // Display an error message
+                MessageBox.Show("Please enter a valid number between 1 and your number of sets.", "Invalid Input",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error); 
+                return false;
+            }
+
+            WorkoutDAL DAL = new WorkoutDAL();
+            int maxSet = DAL.GetExerciseByName(workoutId, graphListBox.Text).sets; // number of sets in exercise
+            int set = int.Parse(setToDeleteBox.Text); // user's selected set
+
+            // selected set must be in range
+            if (set < 1 || set > maxSet)
+            {
+                MessageBox.Show("Please enter a number between 1 and your number of sets.", "Invalid Input",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+
+            return true;
+        }
+
         // ensure only numbers are entered into the data grid
         private void repWeightGrid_CellValidating(object sender, DataGridViewCellValidatingEventArgs e)
         {
@@ -185,7 +293,7 @@ namespace WeightTracker
             if (String.IsNullOrEmpty(inputValue))
                 return;
 
-            // Use a suitable validation method, such as TryParse, to check if the input is a number
+            // check if input is a valid number
             if (!int.TryParse(inputValue, out _))
             {
                 // Display an error message
@@ -194,7 +302,7 @@ namespace WeightTracker
                 // Cancel the editing process to keep the focus on the current cell
                 e.Cancel = true;
             }
-            
+
         }
     }
     

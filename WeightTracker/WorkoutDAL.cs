@@ -8,8 +8,16 @@ namespace WeightTracker
 {
     public class WorkoutDAL
     {
+        // Connection to the DB
+        public SQLiteConnection Connection;
+        
         // Constructor
-        public WorkoutDAL() { }
+        public WorkoutDAL() 
+        {
+            // connect to the database
+            string dbFilePath = "C:\\Users\\Natha\\OneDrive\\Desktop\\SQLite\\Workouts.db";
+            Connection = WorkoutDAL.ConnectToDatabase(dbFilePath);
+        }
 
         // Open and return a connection the database
         public static SQLiteConnection ConnectToDatabase(string dbFilePath)
@@ -28,9 +36,9 @@ namespace WeightTracker
         // // CREATE
 
         // Add the date and notes for a workout to the Workout table
-        public void AddWorkout(SQLiteConnection connection, Workout workout)
+        public void AddWorkout(Workout workout)
         {   
-            using (var cmd = new SQLiteCommand("INSERT INTO Workouts (Date, Notes) VALUES (@date, @notes)", connection))
+            using (var cmd = new SQLiteCommand("INSERT INTO Workouts (Date, Notes) VALUES (@date, @notes)", this.Connection))
             {
                 cmd.Parameters.AddWithValue("@date", workout.dateOfWorkout);
                 cmd.Parameters.AddWithValue("@notes", workout.notes);
@@ -38,22 +46,23 @@ namespace WeightTracker
             }
 
             // Add workout's exercises to the Exercises table
-            foreach (Exercise e in workout.exercises)
+            foreach (Exercise ex in workout.exercises)
             {
-                AddExercise(connection, e, workout.dateOfWorkout);
+                AddExercise(ex, workout.dateOfWorkout);
             }
         }
 
         // Add the name and number of sets of an exercise into the Exercise table
-        public void AddExercise(SQLiteConnection connection, Exercise exercise, DateTime workoutDate)
+        public void AddExercise(Exercise exercise, DateTime workoutDate)
         {
-            int workoutId = GetWorkoutIdByDate(connection, workoutDate);
+            int workoutId = GetWorkoutIdByDate(workoutDate);
             if (workoutId == -1)
             {
                 throw new InvalidOperationException("No workout found on the specified date.");
             }
 
-            using (var cmd = new SQLiteCommand("INSERT INTO Exercises (WorkoutId, Name, Sets) VALUES (@workoutId, @exerciseName, @sets)", connection))
+            string query = "INSERT INTO Exercises (WorkoutId, Name, Sets) VALUES (@workoutId, @exerciseName, @sets)";
+            using (var cmd = new SQLiteCommand(query, this.Connection))
             {
                 cmd.Parameters.AddWithValue("@workoutId", workoutId);
                 cmd.Parameters.AddWithValue("@exerciseName", exercise.Name);
@@ -61,21 +70,23 @@ namespace WeightTracker
                 cmd.ExecuteNonQuery();
             }
 
-            AddRepsWeights(connection, exercise, workoutId);
+            AddRepsWeights(exercise, workoutId);
         }
 
         // Add the reps and weights of an exercise into the RepsWeights table
-        public void AddRepsWeights(SQLiteConnection connection, Exercise exercise, int workoutId)
+        public void AddRepsWeights(Exercise exercise, int workoutId)
         {
-            int exerciseId = GetExerciseId(connection, workoutId, exercise.Name);
-            using (var cmd = new SQLiteCommand("INSERT INTO RepsWeights (ExerciseId, SetNumber, Reps, Weight) VALUES (@exerciseId, @setNumber, @reps, @weight)", connection))
+            int exerciseId = GetExerciseId(workoutId, exercise.Name);
+
+            string query = "INSERT INTO RepsWeights (ExerciseId, SetNumber, Reps, Weight) VALUES (@exerciseId, @setNumber, @reps, @weight)";
+            using (var cmd = new SQLiteCommand(query, this.Connection))
             {
                 cmd.Parameters.AddWithValue("@exerciseId", exerciseId);
                 cmd.Parameters.AddWithValue("@setNumber", 0);
                 cmd.Parameters.AddWithValue("@reps", 0);
                 cmd.Parameters.AddWithValue("@weight", 0);
 
-                using (var transaction = connection.BeginTransaction())
+                using (var transaction = this.Connection.BeginTransaction())
                 {
                     for (int i = 0; i < exercise.sets; i++)
                     {
@@ -94,13 +105,13 @@ namespace WeightTracker
         // // DELETE 
 
         // Delete the selected workout - also deletes all associated exercises and exercise information 
-        public void DeleteWorkoutByDate(SQLiteConnection connection, DateTime workoutDate)
+        public void DeleteWorkoutByDate(DateTime workoutDate)
         {   
-            int workoutId = GetWorkoutIdByDate(connection, workoutDate);
+            int workoutId = GetWorkoutIdByDate(workoutDate);
 
             // delete each exercise with a key that points to workoutId
             string sql = "Select ExerciseId FROM Exercises WHERE WorkoutId = @WorkoutId";
-            using (var cmd = new SQLiteCommand(sql, connection))
+            using (var cmd = new SQLiteCommand(sql, this.Connection))
             {
                 cmd.Parameters.AddWithValue("@WorkoutId", workoutId);
 
@@ -111,28 +122,29 @@ namespace WeightTracker
                     {
                         int ExerciseId = reader.GetInt32(0);
                         Console.WriteLine($"Exercise ID: {ExerciseId}, Workout ID: {workoutId}");
-                        DeleteExercises(connection, workoutId); // Delete the exercise
+                        DeleteExercises(workoutId); // Delete the exercise
                     }
                 }
             }
 
             // delete workouts
             sql = "DELETE from Workouts WHERE Date = @Date";
-            using (var cmd = new SQLiteCommand(sql, connection))
+            using (var cmd = new SQLiteCommand(sql, this.Connection))
             {
                 cmd.Parameters.AddWithValue("@Date", workoutDate);
 
                 int affectedRows = cmd.ExecuteNonQuery();
-                Console.WriteLine($"{affectedRows} rows deleted in Workouts"); //debug
+                if (affectedRows == 0) Console.WriteLine("No workout on specified date");
+                else Console.WriteLine($"{affectedRows} rows deleted in Workouts"); //debug
             }
         }
 
         // Delete the exercises associated with the workout - also deletes all associated exercise information (reps, weights)
-        public void DeleteExercises(SQLiteConnection connection, int workoutId)
+        public void DeleteExercises(int workoutId)
         {
             // delete reps and weights for exercise
             string sql = "SELECT ExerciseId from Exercises WHERE WorkoutId = @WorkoutId";
-            using (var cmd = new SQLiteCommand(sql, connection))
+            using (var cmd = new SQLiteCommand(sql, this.Connection))
             {
                 cmd.Parameters.AddWithValue("@WorkoutId", workoutId);
                 using (SQLiteDataReader reader = cmd.ExecuteReader())
@@ -142,14 +154,14 @@ namespace WeightTracker
                     {
                         int ExerciseId = reader.GetInt32(0);
                         
-                        DeleteRepsWeights(connection, ExerciseId); // Delete all set information for an exercise
+                        DeleteRepsWeights(ExerciseId); // Delete all set information for an exercise
                     }
                 }
             }
 
             // delete exercise
             sql = "DELETE from Exercises WHERE WorkoutId = @WorkoutId";
-            using (var cmd = new SQLiteCommand(sql, connection))
+            using (var cmd = new SQLiteCommand(sql, this.Connection))
             {
                 cmd.Parameters.AddWithValue("@WorkoutId", workoutId);
 
@@ -158,11 +170,44 @@ namespace WeightTracker
             }
         }
 
+        // Delete exercise from a given workout with the given name
+        public void DeleteExerciseByName(int workoutId, string name)
+        {
+            // delete reps and weights for exercise
+            string sql = "SELECT ExerciseId from Exercises WHERE WorkoutId = @WorkoutId AND Name = @name";
+            using (var cmd = new SQLiteCommand(sql, this.Connection))
+            {
+                cmd.Parameters.AddWithValue("@WorkoutId", workoutId);
+                cmd.Parameters.AddWithValue("@name", name);
+                using (SQLiteDataReader reader = cmd.ExecuteReader())
+                {
+                    // iterate through results of selection and manipulate data
+                    while (reader.Read())
+                    {
+                        int ExerciseId = reader.GetInt32(0);
+
+                        DeleteRepsWeights(ExerciseId); // Delete all set information for an exercise
+                    }
+                }
+            }
+
+            // delete exercise
+            sql = "DELETE from Exercises WHERE WorkoutId = @WorkoutId AND Name = @name";
+            using (var cmd = new SQLiteCommand(sql, this.Connection))
+            {
+                cmd.Parameters.AddWithValue("@WorkoutId", workoutId);
+                cmd.Parameters.AddWithValue("@name", name);
+
+                int affectedRows = cmd.ExecuteNonQuery();
+                Console.WriteLine($"{affectedRows} rows deleted in Exercises"); //debug
+            }
+        }
+
         // Delete all sets (all reps and weights) of an exercise
-        public void DeleteRepsWeights(SQLiteConnection connection, int exerciseId)
+        public void DeleteRepsWeights(int exerciseId)
         {
             string sql = "DELETE from RepsWeights WHERE ExerciseId = @ExerciseId";
-            using (var cmd = new SQLiteCommand(sql, connection))
+            using (var cmd = new SQLiteCommand(sql, this.Connection))
             {
                 cmd.Parameters.AddWithValue("@ExerciseId", exerciseId);
 
@@ -172,10 +217,10 @@ namespace WeightTracker
         }
 
         // Delete a specific set of an exercise
-        public void DeleteRepsWeights(SQLiteConnection connection, int exerciseId, int setNumber)
+        public void DeleteRepsWeights(int exerciseId, int setNumber)
         {
             string sql = "DELETE from RepsWeights WHERE ExerciseId = @ExerciseId AND SetNumber = @SetNumber";
-            using (var cmd = new SQLiteCommand(sql, connection))
+            using (var cmd = new SQLiteCommand(sql, this.Connection))
             {
                 cmd.Parameters.AddWithValue("@ExerciseId", exerciseId);
                 cmd.Parameters.AddWithValue("@SetNumber", setNumber);
@@ -183,17 +228,25 @@ namespace WeightTracker
                 int affectedRows = cmd.ExecuteNonQuery();
                 Console.WriteLine($"{affectedRows} rows deleted in RepsWeights"); //debug
             }
+
+            // need to decrement the number of sets in the Exercise table
+            sql = "UPDATE Exercises SET Sets = Sets - 1 WHERE ExerciseId = @exerciseId";
+            using (var cmd = new SQLiteCommand(sql,this.Connection))
+            {
+                cmd.Parameters.AddWithValue("@exerciseId", exerciseId);
+                cmd.ExecuteNonQuery();
+            }
         }
 
 
         // // READ 
 
         // Return All Workouts in DB
-        public  List<Workout> GetAllWorkouts(SQLiteConnection connection)
+        public  List<Workout> GetAllWorkouts()
         {
             List<Workout> workouts = new List<Workout>();
 
-            using (var cmd = new SQLiteCommand("SELECT WorkoutId, Date, Notes FROM Workouts", connection))
+            using (var cmd = new SQLiteCommand("SELECT WorkoutId, Date, Notes FROM Workouts", this.Connection))
             {
                 using (var reader = cmd.ExecuteReader())
                 {
@@ -202,7 +255,7 @@ namespace WeightTracker
                         DateTime date = reader.GetDateTime(reader.GetOrdinal("Date"));
                         string notes = reader.GetString(reader.GetOrdinal("Notes"));
                         int workoutId = reader.GetInt32(reader.GetOrdinal("WorkoutId"));
-                        List<Exercise> exercises = GetExercises(connection, workoutId);
+                        List<Exercise> exercises = GetExercises(workoutId);
                         workouts.Add(new Workout(exercises, date));
                     }
                 }
@@ -212,13 +265,13 @@ namespace WeightTracker
         }
 
         // Find a unique workout in the db, return a Workout OBJECT
-        public Workout GetWorkoutByDate(SQLiteConnection connection, DateTime workoutDate)
+        public Workout GetWorkoutByDate(DateTime workoutDate)
         {
             Workout workout = new Workout();
             List<Exercise> exercises;
 
             // retrieve the notes from the workout table
-            using (var cmd = new SQLiteCommand("SELECT WorkoutId, Notes FROM Workouts WHERE Date = @date", connection))
+            using (var cmd = new SQLiteCommand("SELECT WorkoutId, Notes FROM Workouts WHERE Date = @date", this.Connection))
             {
                 cmd.Parameters.AddWithValue("@date", workoutDate);
                 using (var reader = cmd.ExecuteReader())
@@ -235,7 +288,7 @@ namespace WeightTracker
                         string notes = reader.GetString(reader.GetOrdinal("Notes"));
 
                         // retrieve the exercises from the exercise table
-                        exercises = GetExercises(connection, workoutId);
+                        exercises = GetExercises(workoutId);
 
                         workout.dateOfWorkout = workoutDate;
                         workout.notes = notes;
@@ -249,12 +302,12 @@ namespace WeightTracker
         }
 
         // Find exercises from a given workout, return a list of Exercise OBJECTS
-        public List<Exercise> GetExercises(SQLiteConnection connection, int workoutId)
+        public List<Exercise> GetExercises(int workoutId)
         {
             List<Exercise> exercises = new List<Exercise>();
             Tuple<int[], int[]> repsWeights;
 
-            using (var cmd = new SQLiteCommand("SELECT ExerciseID, Name, Sets FROM Exercises WHERE WorkoutId = @workoutId", connection))
+            using (var cmd = new SQLiteCommand("SELECT ExerciseID, Name, Sets FROM Exercises WHERE WorkoutId = @workoutId", this.Connection))
             {
                 cmd.Parameters.AddWithValue("@workoutId", workoutId);
                 using (var reader = cmd.ExecuteReader())
@@ -267,7 +320,7 @@ namespace WeightTracker
                         int sets = reader.GetInt32(reader.GetOrdinal("Sets"));
 
                         // need to get rep and weight information from respective table
-                        repsWeights = GetRepsWeights(connection, exerciseId, sets);
+                        repsWeights = GetRepsWeights(exerciseId, sets);
 
                         exercises.Add(new Exercise(name, sets, repsWeights.Item1, repsWeights.Item2));
                     }
@@ -278,11 +331,11 @@ namespace WeightTracker
         }
 
         // Find exercise from a given workout with the given name, return an Exercise OBJECT
-        public Exercise GetExerciseByName(SQLiteConnection connection, int workoutId, string name)
+        public Exercise GetExerciseByName(int workoutId, string name)
         {
 
             string query = "SELECT ExerciseID, Name, Sets FROM Exercises WHERE WorkoutId = @workoutId And Name = @name";
-            using (var cmd = new SQLiteCommand(query, connection))
+            using (var cmd = new SQLiteCommand(query, this.Connection))
             {
                 cmd.Parameters.AddWithValue("@workoutId", workoutId);
                 cmd.Parameters.AddWithValue("@name", name);
@@ -292,7 +345,7 @@ namespace WeightTracker
                     {
                         int exerciseId = reader.GetInt32(reader.GetOrdinal("ExerciseId"));
                         int sets = reader.GetInt32(reader.GetOrdinal("Sets"));
-                        Tuple<int[], int[]> repsWeights = GetRepsWeights(connection, exerciseId, sets);
+                        Tuple<int[], int[]> repsWeights = GetRepsWeights(exerciseId, sets);
 
                         return new Exercise(name, sets, repsWeights.Item1, repsWeights.Item2);
                     }
@@ -307,12 +360,12 @@ namespace WeightTracker
         }
 
         // Find all reps and weights for an exercise (all sets), return arrays of reps and weights as a Tuple
-        public Tuple<int[], int[]> GetRepsWeights(SQLiteConnection connection, int exerciseId, int sets)
+        public Tuple<int[], int[]> GetRepsWeights(int exerciseId, int sets)
         {
             int[] reps = new int[sets];
             int[] weights = new int[sets];
 
-            using (var cmd = new SQLiteCommand("SELECT Reps, Weight FROM RepsWeights WHERE ExerciseId = @exerciseId", connection))
+            using (var cmd = new SQLiteCommand("SELECT Reps, Weight FROM RepsWeights WHERE ExerciseId = @exerciseId", this.Connection))
             {
                 cmd.Parameters.AddWithValue("@exerciseId", exerciseId);
                 using (var reader = cmd.ExecuteReader())
@@ -332,13 +385,13 @@ namespace WeightTracker
         }
 
         // Find reps and weight for a particular set of an exercise, return reps and weight as a Tuple
-        public Tuple<int, int> GetRepsWeightsOneSet(SQLiteConnection connection, int exerciseId, int setNum)
+        public Tuple<int, int> GetRepsWeightsOneSet(int exerciseId, int setNum)
         {
             int reps;
             int weight;
 
             string query = "SELECT Reps, Weight FROM RepsWeights WHERE ExerciseId = @exerciseId AND SetNumber = @SetNumber";
-            using (var cmd = new SQLiteCommand(query, connection))
+            using (var cmd = new SQLiteCommand(query, this.Connection))
             {
                 cmd.Parameters.AddWithValue("@exerciseId", exerciseId);
                 cmd.Parameters.AddWithValue("@SetNumber", setNum);
@@ -366,9 +419,9 @@ namespace WeightTracker
 
 
         // Find a unique workout in the db, return the id number
-        public int GetWorkoutIdByDate(SQLiteConnection connection, DateTime workoutDate)
+        public int GetWorkoutIdByDate(DateTime workoutDate)
         {
-            using (var cmd = new SQLiteCommand("SELECT WorkoutId FROM Workouts WHERE Date = @date", connection))
+            using (var cmd = new SQLiteCommand("SELECT WorkoutId FROM Workouts WHERE Date = @date", this.Connection))
             {
                 cmd.Parameters.AddWithValue("@date", workoutDate);
                 using (var reader = cmd.ExecuteReader())
@@ -386,9 +439,9 @@ namespace WeightTracker
         }
 
         // Find a unique exercise in the db, return the id number
-        public int GetExerciseId(SQLiteConnection connection, int workoutId, string exerciseName)
+        public int GetExerciseId(int workoutId, string exerciseName)
         {
-            using (var cmd = new SQLiteCommand("SELECT ExerciseID FROM Exercises WHERE WorkoutId = @workoutId AND Name = @name", connection))
+            using (var cmd = new SQLiteCommand("SELECT ExerciseID FROM Exercises WHERE WorkoutId = @workoutId AND Name = @name", this.Connection))
             {
                 cmd.Parameters.AddWithValue("@workoutId", workoutId);
                 cmd.Parameters.AddWithValue("@name", exerciseName);
@@ -407,10 +460,10 @@ namespace WeightTracker
         }
 
         // Find a particular set of an exercise in the db, return the id number
-        public int GetRepsWeightsId(SQLiteConnection connection, int exerciseId, int setNumber)
+        public int GetRepsWeightsId(int exerciseId, int setNumber)
         {
             string sql = "SELECT RepsWeightsId FROM RepsWeights WHERE ExerciseId = @ExerciseId AND SetNumber = @SetNumber";
-            using (var cmd = new SQLiteCommand(sql, connection))
+            using (var cmd = new SQLiteCommand(sql, this.Connection))
             {
                 cmd.Parameters.AddWithValue("ExerciseId", exerciseId);
                 cmd.Parameters.AddWithValue("SetNumber", setNumber);
