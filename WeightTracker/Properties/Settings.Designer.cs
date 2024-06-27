@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace WeightTracker.Properties
+namespace WorkoutTracker.Properties
 {
 
 

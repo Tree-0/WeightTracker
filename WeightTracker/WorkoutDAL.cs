@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Security;
 using System.Data.Entity.Core.Common.CommandTrees;
 
-namespace WeightTracker
+namespace WorkoutTracker
 {
     public class WorkoutDAL
     {

@@ -1,6 +1,6 @@
-﻿namespace WeightTracker
+﻿namespace WorkoutTracker
 {
-    partial class Form1
+    partial class MainForm
     {
         /// <summary>
         /// Required designer variable.

@@ -24,16 +24,16 @@ using System.Data.SQLite;
 // https://docs.google.com/document/d/1ylS3EJpUSgirsgJCRAvSfPP_sIsRLDkDQlpYvgdLyCU/edit
 //
 
-namespace WeightTracker
+namespace WorkoutTracker
 {
-    public partial class Form1 : Form
+    public partial class MainForm : Form
     {
         // Exercises are added to this list upon clicking the "add exercise" button
         // This list is used to instantiate a Workout object when the "submit" button is pressed
         // After each workout is submitted, this list is cleared and reused
         List<Exercise> exercises = new List<Exercise>();
 
-        public Form1()
+        public MainForm()
         {
             InitializeComponent();
 

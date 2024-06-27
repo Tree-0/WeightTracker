@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
 
-namespace WeightTracker
+namespace WorkoutTracker
 {
     [TestFixture]
     internal class DBTests
